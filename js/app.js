@@ -1,93 +1,77 @@
-/**
- * Configuration and Global Variables
- * API_URL: Endpoint for task management
- * loggedUser: Retreives the session object from local storage
- */
 const API_URL = "http://localhost:3000/tasks";
 const tasksContainer = document.getElementById("tasksContainer");
 const loggedUser = JSON.parse(localStorage.getItem("user"));
 let taskModal; 
 
 // ==========================================
-// 1. INITIALIZATION
+// 1. INICIALIZACIÓN
 // ==========================================
 document.addEventListener("DOMContentLoaded", () => {
-    // Session Security Check: Redirect to login if no user is found
+    // Verificar sesión
     if (!loggedUser) {
         window.location.href = "login.html";
         return;
     }
     
-    // UI Personalization: Display current user's name
+    // Mostrar nombre del usuario
     document.getElementById("userNameDisplay").textContent = `Hola, ${loggedUser.name}`;
     
-    // Bootstrap Modal Initialization for programmatic control (show/hide)
+    // Inicializar el Modal de Bootstrap
     const modalEl = document.getElementById('taskModal');
     if(modalEl) {
         taskModal = new bootstrap.Modal(modalEl);
     }
 
-    // Initial data fetch
+    // Cargar tareas iniciales
     loadTasks();
 });
 
 // ==========================================
-// 2. MODAL CONTROL (CREATE MODE)
+// 2. ABRIR MODAL (CREAR)
 // ==========================================
-/**
- * Resets the form and prepares the modal for a new task entry.
- * Attached to the window object to be accessible from the HTML sidebar/header.
- */
+// Esta función faltaba y por eso el botón "Nueva Tarea" no hacía nada
 window.openCreateModal = function() {
     const form = document.getElementById("taskForm");
-    if(form) form.reset(); 
+    if(form) form.reset(); // Limpiar formulario
     
-    // Clear hidden ID field to ensure the system treats this as a new entry
-    document.getElementById("taskId").value = ""; 
+    document.getElementById("taskId").value = ""; // Limpiar ID (importante para saber que es nueva)
     document.getElementById("modalTitle").textContent = "Nueva Tarea";
     
     if(taskModal) taskModal.show();
 }
 
 // ==========================================
-// 3. DATA FETCHING (READ)
+// 3. CARGAR TAREAS (LEER)
 // ==========================================
-/**
- * Fetches tasks from the API and applies ownership and status filters.
- * @param {string} filterStatus - Default is "All", can be "Pending", "Completed", etc.
- */
 async function loadTasks(filterStatus = "All") {
     try {
         const response = await fetch(API_URL);
         const tasks = await response.json();
 
-        // Security/Privacy: Filter tasks belonging only to the logged-in user
+        // Filtrar solo las tareas de este usuario
         let myTasks = tasks.filter(task => task.userId === loggedUser.id);
 
-        // Apply secondary filtering based on the sidebar selection
+        // Aplicar filtro de estado si es necesario
         if (filterStatus !== "All") {
             myTasks = myTasks.filter(task => task.status === filterStatus);
         }
 
         renderTasks(myTasks);
     } catch (error) {
-        console.error("Error loading tasks:", error);
+        console.error("Error cargando tareas:", error);
     }
 }
 
 // ==========================================
-// 4. UI RENDERING
+// 4. PINTAR TAREAS EN HTML
 // ==========================================
-/**
- * Dynamically injects tasks into the table body using HTML templates.
- */
 function renderTasks(tasks) {
     const container = document.getElementById("tasksContainer");
     const template = document.getElementById("task-row-template");
-    container.innerHTML = ""; 
+    container.innerHTML = ""; // Limpiar tabla
 
-    // Handle Empty States: Show/Hide empty inbox message
     if (tasks.length === 0) {
+        // Mostrar mensaje de vacío si no hay tareas
         const emptyMsg = document.getElementById("emptyMessage");
         if(emptyMsg) emptyMsg.classList.remove("d-none");
         return;
@@ -99,24 +83,25 @@ function renderTasks(tasks) {
     tasks.forEach(task => {
         const clone = template.content.cloneNode(true);
         
-        // Data Mapping
+        // Llenar datos básicos
         clone.querySelector(".task-title").textContent = task.title;
         clone.querySelector(".task-desc").textContent = task.description;
         clone.querySelector(".task-date").textContent = task.dueDate;
         
-        // Priority Badges: Assign dynamic Bootstrap classes
+        // Badges con colores
         const badgeP = clone.querySelector(".task-priority");
         badgeP.textContent = task.priority;
         badgeP.className = `badge task-priority ${getPriorityColor(task.priority)}`;
 
-        // Status Badges: Assign dynamic Bootstrap classes
         const badgeS = clone.querySelector(".task-status");
         badgeS.textContent = task.status;
         badgeS.className = `badge task-status ${getStatusColor(task.status)}`;
 
-        // Event Listeners for Row Actions
+        // BOTONES DE ACCIÓN
+        // 1. Borrar
         clone.querySelector(".btn-delete").onclick = () => deleteTask(task.id);
         
+        // 2. Editar (ESTO FALTABA) -> Ahora llama a loadTaskIntoModal
         const btnEdit = clone.querySelector(".btn-edit");
         btnEdit.onclick = () => loadTaskIntoModal(task);
 
@@ -125,43 +110,44 @@ function renderTasks(tasks) {
 }
 
 // ==========================================
-// 5. UPDATE PREPARATION
+// 5. PREPARAR EDICIÓN
 // ==========================================
-/**
- * Populates the modal form with existing task data for editing.
- */
 function loadTaskIntoModal(task) {
-    document.getElementById("taskId").value = task.id; // Critical for PUT request identification
+    // Llenar el formulario con los datos de la tarea
+    document.getElementById("taskId").value = task.id; // ¡Clave para editar!
     document.getElementById("taskTitle").value = task.title;
     document.getElementById("taskDesc").value = task.description;
     document.getElementById("taskPriority").value = task.priority;
     document.getElementById("taskDate").value = task.dueDate;
     document.getElementById("taskStatus").value = task.status;
 
+    // Cambiar título del modal
     document.getElementById("modalTitle").textContent = "Editar Tarea";
+    
+    // Mostrar modal
     taskModal.show();
 }
 
 // ==========================================
-// 6. FORM SUBMISSION (CREATE OR UPDATE)
+// 6. GUARDAR (CREAR O EDITAR)
 // ==========================================
 async function saveTask() {
-    // Extract form data
-    const id = document.getElementById("taskId").value; 
+    // Obtener valores del formulario
+    const id = document.getElementById("taskId").value; // Si tiene valor, es EDICIÓN
     const title = document.getElementById("taskTitle").value;
     const description = document.getElementById("taskDesc").value;
     const priority = document.getElementById("taskPriority").value;
     const date = document.getElementById("taskDate").value;
     const status = document.getElementById("taskStatus").value;
 
-    // Basic Validation
+    // Validación simple
     if (!title || !date) {
-        return Swal.fire("Atención", "Title and date are required", "warning");
+        return Swal.fire("Atención", "El título y la fecha son obligatorios", "warning");
     }
 
-    // Build Task Object
+    // Objeto Tarea
     const taskData = {
-        userId: loggedUser.id, 
+        userId: loggedUser.id, // Vincular al usuario actual
         title: title,
         description: description,
         dueDate: date,
@@ -171,15 +157,16 @@ async function saveTask() {
 
     try {
         if (id) {
-            // EDIT MODE: Uses PUT to update existing record
+            // === MODO EDICIÓN (PUT) ===
             await fetch(`${API_URL}/${id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(taskData)
             });
-            Swal.fire("Updated", "Task modified successfully", "success");
+            Swal.fire("Actualizado", "La tarea ha sido modificada", "success");
         } else {
-            // CREATE MODE: Uses POST to save new record
+            // === MODO CREACIÓN (POST) ===
+            // Generamos ID manual string para evitar conflictos
             taskData.id = Date.now().toString(); 
             
             await fetch(API_URL, {
@@ -187,78 +174,64 @@ async function saveTask() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(taskData)
             });
-            Swal.fire("Saved", "New task created", "success");
+            Swal.fire("Guardado", "Nueva tarea creada exitosamente", "success");
         }
 
-        taskModal.hide(); // Close UI
-        loadTasks();      // Refresh Table
+        taskModal.hide(); // Cerrar modal
+        loadTasks();      // Recargar lista
 
     } catch (error) {
         console.error(error);
-        Swal.fire("Error", "Could not save the task", "error");
+        Swal.fire("Error", "No se pudo guardar la tarea", "error");
     }
 }
 
 // ==========================================
-// 7. DELETION
+// 7. BORRAR
 // ==========================================
-/**
- * Deletes a task from the server after user confirmation.
- */
 async function deleteTask(id) {
     const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: "This action cannot be undone",
+        title: '¿Estás seguro?',
+        text: "No podrás revertir esto",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#d33',
         cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Yes, delete it'
+        confirmButtonText: 'Sí, borrar'
     });
 
     if (result.isConfirmed) {
         try {
             await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-            Swal.fire('Deleted!', 'Task has been removed.', 'success');
+            Swal.fire('¡Borrado!', 'La tarea ha sido eliminada.', 'success');
             loadTasks();
         } catch (error) {
-            Swal.fire("Error", "Deletion failed", "error");
+            Swal.fire("Error", "No se pudo borrar", "error");
         }
     }
 }
 
 // ==========================================
-// 8. HELPER UTILITIES
+// 8. UTILIDADES
 // ==========================================
-/**
- * Clears local session and redirects to login.
- */
 function logout() {
     localStorage.removeItem("user");
     window.location.href = "login.html";
 }
 
-/**
- * Priority styling logic for Bootstrap badges.
- */
 function getPriorityColor(p) {
     if (p === "High") return "bg-danger";
     if (p === "Medium") return "bg-warning text-dark";
     return "bg-success";
 }
 
-/**
- * Status styling logic for Bootstrap badges.
- */
 function getStatusColor(s) {
     if (s === "Completed") return "bg-success";
     if (s === "In Progress") return "bg-primary";
     return "bg-secondary";
 }
 
-/**
- * Global function for sidebar status filtering.
- */
+// Función global para los filtros del sidebar
 window.filterTasks = function(status) {
     loadTasks(status);
 }

@@ -1,92 +1,94 @@
-const API_URL_TASKS = "http://localhost:3000/tasks"; 
-const API_URL_USERS = "http://localhost:3000/users"; 
-const API_BASE = "http://localhost:3000/tasks"; 
+const API_URL_TASKS = "http://localhost:3000/tasks"; // Sin _expand aquí
+const API_URL_USERS = "http://localhost:3000/users"; // URL para usuarios
+const API_BASE = "http://localhost:3000/tasks"; // URL base para PUT/DELETE
 let adminModal;
-let allUsers = []; // Global variable to store user data for manual joining
+let allUsers = []; // Variable global para almacenar todos los usuarios
 
-// 1. SECURITY & ACCESS CONTROL
+// 1. SEGURIDAD
 const loggedUser = JSON.parse(localStorage.getItem("user"));
 if (!loggedUser || loggedUser.role !== 'admin') {
     window.location.href = "login.html";
 }
 
-// 2. INITIALIZATION
+// 2. INICIO
 document.addEventListener("DOMContentLoaded", async () => {
-    // Initialize Bootstrap Modal instance
+    // Inicializar el modal de Bootstrap
     const modalElement = document.getElementById('editModal');
     if (modalElement) {
         adminModal = new bootstrap.Modal(modalElement);
     }
     
-    // Fetch users first to enable task-user mapping
+    // Primero carga todos los usuarios disponibles
     await loadAllUsers();
 
     if(document.getElementById("adminTableBody")) {
-        loadAdminData(); // Load tasks once users are available
+        loadAdminData(); // Luego carga las tareas
     }
 });
 
-// FETCH UTILITY: Retrieve all users from database
+// NUEVA FUNCIÓN: Cargar todos los usuarios
 async function loadAllUsers() {
     try {
         const response = await fetch(API_URL_USERS);
         allUsers = await response.json();
     } catch (error) {
-        console.error("Error fetching users:", error);
+        console.error("Error cargando usuarios:", error);
     }
 }
 
-// 3. DATA LOADING (Handles filtering and manual JSON join)
+// 3. CARGAR DATOS (FUNCIÓN MODIFICADA para filtrar y hacer match manual)
 async function loadAdminData(filterStatus = "All") {
     try {
         let fetchUrl = API_URL_TASKS; 
 
         if (filterStatus !== "All") {
+            // Aquí usamos '?' porque API_URL_TASKS no tiene ningún parámetro aún
             fetchUrl = `${API_URL_TASKS}?status=${filterStatus}`;
         }
         
         const response = await fetch(fetchUrl);
         let tasks = await response.json();
 
-        // MANUAL JOIN: Map tasks to their corresponding user objects
+        // **AQUÍ HACEMOS EL MATCH MANUAL (JOIN)**
+        // Iteramos sobre las tareas y adjuntamos el objeto de usuario correspondiente
         tasks = tasks.map(task => {
             const user = allUsers.find(u => u.id === task.userId);
+            // Creamos una nueva propiedad 'user' en cada objeto task manualmente
             return { ...task, user: user || null }; 
         });
 
         updateStats(tasks);
         renderAdminTable(tasks);
     } catch (error) {
-        console.error("Error loading dashboard data:", error);
+        console.error("Error:", error);
     }
 }
 
-// 4. TABLE RENDERING
+// 4. PINTAR TABLA (Con botón editar)
 function renderAdminTable(tasks) {
     const tbody = document.getElementById("adminTableBody");
     const template = document.getElementById("admin-row-template");
-
+    // Asegúrate de que el template existe en el HTML antes de usarlo
     if (!template) {
-        console.error("Template 'admin-row-template' not found!");
+        console.error("Template 'admin-row-template' no encontrado!");
         return;
     }
-    
     tbody.innerHTML = "";
 
     if (tasks.length === 0) {
-        // Optional: Implement "No tasks found" UI state here
+        // Opcional: mostrar un mensaje de "No hay tareas" si lo tienes implementado
         return;
     }
 
     tasks.forEach(task => {
         const clone = template.content.cloneNode(true);
         
-        // Basic task info
+        // Datos básicos
         clone.querySelector(".t-id").textContent = task.id;
         
-        // USER DATA MAPPING: Handle deleted or missing user references
-        const userName = task.user ? task.user.name : "Unknown/Deleted User";
-        const userEmail = task.user ? task.user.email : `User ID: ${task.userId}`;
+        // --- CORRECCIÓN DE USUARIO ---
+        const userName = task.user ? task.user.name : "Usuario Borrado o Desconocido";
+        const userEmail = task.user ? task.user.email : `ID: ${task.userId}`;
         
         clone.querySelector(".t-user").textContent = userName;
         clone.querySelector(".t-email").textContent = userEmail;
@@ -94,17 +96,17 @@ function renderAdminTable(tasks) {
         clone.querySelector(".t-title").textContent = task.title;
         clone.querySelector(".t-date").textContent = task.dueDate;
         
-        // Status Badge Styling
+        // Estado con color
         const badge = clone.querySelector(".t-status");
         badge.textContent = task.status;
         badge.className = `badge t-status ${getStatusClass(task.status)}`;
 
-        // ACTION BUTTONS: Event listeners
-        // 1. Edit Action
+        // --- BOTONES ---
+        // 1. Editar
         const btnEdit = clone.querySelector(".btn-edit");
         btnEdit.onclick = () => openEditModal(task);
 
-        // 2. Delete Action
+        // 2. Borrar
         const btnDelete = clone.querySelector(".btn-delete");
         btnDelete.onclick = () => deleteAsAdmin(task.id);
 
@@ -112,7 +114,7 @@ function renderAdminTable(tasks) {
     });
 }
 
-// 5. MODAL MANAGEMENT: Populate edit form
+// 5. ABRIR MODAL DE EDICIÓN
 function openEditModal(task) {
     document.getElementById("editTaskId").value = task.id;
     document.getElementById("editTitle").value = task.title;
@@ -122,7 +124,7 @@ function openEditModal(task) {
     adminModal.show();
 }
 
-// 6. UPDATE DATA (PUT Method)
+// 6. GUARDAR CAMBIOS (PUT)
 async function saveAdminTask() {
     const id = document.getElementById("editTaskId").value;
     const title = document.getElementById("editTitle").value;
@@ -130,17 +132,17 @@ async function saveAdminTask() {
     const status = document.getElementById("editStatus").value;
 
     if (!id || !title || !date) {
-        Swal.fire("Warning", "Please fill in all required fields.", "warning");
+        Swal.fire("Atención", "Faltan datos en el formulario.", "warning");
         return;
     }
 
     try {
-        // Fetch original task to preserve immutable fields (like userId or description)
+        // Primero obtenemos la tarea original para no perder el userId ni la descripción
         const originalResponse = await fetch(`${API_BASE}/${id}`);
         const originalTask = await originalResponse.json();
 
         const updatedTask = {
-            ...originalTask, 
+            ...originalTask, // Mantiene userId, priority, description, etc.
             title: title,
             dueDate: date,
             status: status
@@ -153,29 +155,28 @@ async function saveAdminTask() {
         });
 
         adminModal.hide();
-        Swal.fire("Updated", "The task has been modified successfully", "success");
-        loadAdminData(); // Refresh current view
+        Swal.fire("Actualizado", "La tarea ha sido modificada", "success");
+        loadAdminData(); // Recargar la vista actual
 
     } catch (error) {
-        console.error("Update error:", error);
-        Swal.fire("Error", "Could not update the task", "error");
+        console.error(error);
+        Swal.fire("Error", "No se pudo actualizar", "error");
     }
 }
 
-// 7. DELETE DATA
+// 7. BORRAR
 async function deleteAsAdmin(id) {
-    // Using native confirm for brevity, can be replaced with SweetAlert
-    if(confirm("Are you sure you want to permanently delete this task?")) {
+    if(confirm("¿Estás seguro de eliminar esta tarea permanentemente?")) {
         try {
             await fetch(`${API_BASE}/${id}`, { method: "DELETE" });
-            loadAdminData(); // Refresh UI
+            loadAdminData(); // Recargar tabla
         } catch (error) {
-            Swal.fire("Error", "The task could not be deleted", "error");
+            Swal.fire("Error", "No se pudo borrar", "error");
         }
     }
 }
 
-// 8. DASHBOARD STATISTICS & HELPERS
+// 8. ESTADÍSTICAS & UTILS
 function updateStats(tasks) {
     if (!Array.isArray(tasks)) return;
     
@@ -184,20 +185,18 @@ function updateStats(tasks) {
     document.getElementById("completedCount").textContent = tasks.filter(t => t.status === "Completed").length;
 }
 
-// Return Bootstrap class based on status string
 function getStatusClass(status) {
     if (status === "Completed") return "bg-success";
     if (status === "In Progress") return "bg-primary";
-    return "bg-warning text-dark"; // Default: Pending
+    return "bg-warning text-dark"; // Pending
 }
 
-// AUTH: Session termination
 function logout() {
     localStorage.removeItem("user");
     window.location.href = "login.html";
 }
 
-// GLOBAL FILTER EXPOSURE: Accessible from sidebar links
+// --- FUNCIÓN GLOBAL PARA LOS FILTROS DEL SIDEBAR ---
 window.filterAdminTasks = function(status) {
     loadAdminData(status);
 }
