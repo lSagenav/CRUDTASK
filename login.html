@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | CRUDTask</title>
+    
+    <!-- Framework: Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net" rel="stylesheet">
+    
+    <!-- Icons: Bootstrap Icons Library -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net">
+    
+    <!-- Core Application Scripts -->
+    <script src="./js/auth.js"></script> <!-- Handles session validation -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- UI Alerts -->
+    <script src="./js/api.js" defer></script> <!-- Backend API communication -->
+</head>
+
+<body class="bg-light">
+    <main>
+        <div class="container min-vh-100 d-flex justify-content-center align-items-center">
+            <div class="card shadow p-4" style="max-width: 380px; width: 100%;">
+                
+                <!-- SECTION: LOGIN FORM -->
+                <div id="loginForm" class="form-fade show">
+                    <div class="d-flex justify-content-center">
+                        <img class="w-25" src="./img/logo.webp" alt="App Logo">
+                    </div>
+                    <h4 class="text-center fw-bold">CRUDTASK</h4>
+                    <p class="text-center text-muted">Login to your account</p>
+
+                    
+                    <div class="mb-3">
+                        <i class="bi bi-person"></i>
+                        <label class="form-label">Full name</label>
+                        <input id="loginName" type="text" class="form-control" placeholder="Enter your name">
+                    </div>
+
+                    <div class="mb-3">
+                        <i class="bi bi-key"></i>
+                        <label class="form-label">Password</label>
+                        <input id="loginPassword" type="password" class="form-control" placeholder="••••••••">
+                    </div>
+
+                    <div class="mb-3">
+                        <i class="bi bi-envelope"></i>
+                        <label class="form-label">Email Address</label>
+                        <input id="loginEmail" type="email" class="form-control" placeholder="name@example.com">
+                    </div>
+
+                    <!-- Role Selection for Authorization -->
+                    <div class="mb-3">
+                        <i class="bi bi-person-vcard-fill"></i>
+                        <label class="form-label">Select Role</label>
+                        <select id="loginRole" class="form-select">
+                            <option value="user">Standard User</option>
+                            <option value="admin">Administrator</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-success w-100 mb-2" onclick="loginUser()">
+                        Sign In
+                    </button>
+
+                    <!-- Navigation to Registration -->
+                    <p class="text-center mt-3">
+                        Don't have an account?
+                        <a href="#" onclick="showRegister()">Sign up</a>
+                    </p>
+                </div>
+
+                <!-- SECTION: REGISTRATION FORM (Hidden by default) -->
+                <div id="registerForm" class="d-none">
+                    <div class="d-flex justify-content-center mt-2">
+                        <img class="w-25" src="./img/logo.webp" alt="App Logo">
+                    </div>
+                    <h4 class="text-center fw-bold">Create Account</h4>
+                    <p class="text-center text-muted">Register to continue</p>
+
+                    <div class="mb-2">
+                        <label class="form-label">First Name</label>
+                        <input id="regName" type="text" class="form-control">
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">Last Name</label>
+                        <input id="regLastname" type="text" class="form-control">
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">Email</label>
+                        <input id="regEmail" type="email" class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input id="regPassword" type="password" class="form-control">
+                    </div>
+
+                    <button class="btn btn-success w-100 mb-2" onclick="registerUser()">
+                        Register
+                    </button>
+
+                    <!-- Dynamic Feedback Alert -->
+                    <div id="registerAlert" class="alert d-none" role="alert"></div>
+
+                    <p class="text-center mt-3">
+                        Already have an account?
+                        <a href="#" onclick="showLogin()">Back to login</a>
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer class="text-center mt-4 mb-3">
+        <p class="text-muted small">Performance Test &copy; 2024</p>
+    </footer>
+</body>
+</html>

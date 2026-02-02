@@ -1,0 +1,63 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "Super Admin",
+      "email": "admin@admin.com",
+      "password": "admin",
+      "role": "admin"
+    },
+    {
+      "id": "2",
+      "name": "Test",
+      "email": "user@test.com",
+      "password": "123",
+      "role": "user"
+    },
+    {
+      "id": "1770048862606",
+      "name": "Elpepe",
+      "email": "pepe@gmail.com",
+      "password": "1234",
+      "role": "user"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "1770046280232",
+      "userId": "2",
+      "title": "Pan con torta xD",
+      "description": "eee",
+      "dueDate": "2026-01-26",
+      "priority": "High",
+      "status": "In Progress"
+    },
+    {
+      "id": "1770046292128",
+      "userId": "2",
+      "title": "Pan con gaseosa",
+      "description": "efrf",
+      "dueDate": "2026-02-11",
+      "priority": "Low",
+      "status": "Pending"
+    },
+    {
+      "id": "1770046649719",
+      "userId": "2",
+      "title": "Tarea de Pedrito actualizada",
+      "description": "apurate wey",
+      "dueDate": "2026-02-04",
+      "priority": "High",
+      "status": "Completed"
+    },
+    {
+      "id": "1770048920080",
+      "userId": "1770048862606",
+      "title": "caremonda",
+      "description": "joder casi que no le sacamos el id a los nombres",
+      "dueDate": "2026-02-03",
+      "priority": "High",
+      "status": "In Progress"
+    }
+  ]
+}
