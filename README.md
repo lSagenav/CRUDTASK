@@ -1,53 +1,62 @@
 # CRUDTASK
-# CRUDTASK: Aplicación de Gestión de Tareas Académicas
+# CRUDTASK: Academic Task Management Application
 
-CRUDTASK es una aplicación web diseñada para la gestión eficiente de tareas académicas, permitiendo a los usuarios administrar sus propias actividades y a los administradores supervisar la actividad general del sistema.
+CRUDTASK is a web application designed for the efficient management of academic tasks, allowing users to manage their own activities and administrators to monitor overall system activity.
 
-Este proyecto fue desarrollado como parte de una prueba de desempeño del Módulo 3, utilizando tecnologías front-end puras y simulando la persistencia de datos mediante una API falsa con `JSON Server` y `LocalStorage`.
-
----
-
-## 🚀 Funcionalidades Implementadas
-
-Basado en los requerimientos del proyecto, se ha completado con éxito la siguiente lista de funcionalidades clave:
-
-### Módulo de Autenticación y Seguridad
-*   **Registro de Usuarios:** Creación de nuevas cuentas con asignación automática del rol `user`.
-*   **Inicio de Sesión (Login):** Validación de credenciales contra `JSON Server` y persistencia de sesión mediante `LocalStorage`.
-*   **Control de Roles:** Redirección automática a `index.html` (usuario) o `dashboard.html` (admin) tras iniciar sesión, y protección de rutas.
-
-### Módulo de Usuario y Tareas
-*   **Creación de Tareas:** Los usuarios pueden añadir nuevas tareas a su lista personal.
-*   **Edición de Tareas:** Funcionalidad para modificar detalles de las tareas existentes.
-*   **Gestión de Estados:** Capacidad de cambiar el estado de las tareas (`pending`, `in progress`, `completed`).
-
-### Módulo Administrativo
-*   **Gestión de Usuarios (Opcional):** El panel de administrador incluye una sección para visualizar y, opcionalmente, gestionar usuarios registrados.
-*   **Dashboard General:** Vista consolidada de todas las tareas del sistema.
+This project was developed as part of a Module 3 performance test, using pure front-end technologies and simulating data persistence through a mock API with `JSON Server` and `LocalStorage`.
 
 ---
 
-## 🛠️ Tecnologías Utilizadas
+## 🚀 Implemented Features
 
-El proyecto fue construido siguiendo las especificaciones obligatorias, enfocándose en la simplicidad y el rendimiento del lado del cliente:
+Based on the project requirements, the following list of key features has been successfully completed:
 
-*   **HTML5 & CSS3:** Estructura y estilos base.
-*   **Bootstrap 5:** Framework CSS para un diseño responsivo y componentes UI.
-*   **JavaScript (Vanilla):** Lógica de la aplicación, manejo de eventos y consumo de API.
-*   **JSON Server:** Herramienta para simular una API REST completa con un archivo `db.json` local.
-*   **LocalStorage:** Usado para mantener la sesión del usuario activa tras la autenticación.
+### Authentication and Security Module
+* **User Registration:** Creation of new accounts with automatic assignment of the `user` role.
+
+* **Login:** Credential validation against `JSON Server` and session persistence using `LocalStorage`.
+
+* **Role Control:** Automatic redirection to `index.html` (user) or `dashboard.html` (admin) after logging in, and path protection.
+
+### User and Task Module
+* **Task Creation:** Users can add new tasks to their personal list.
+
+* **Task Editing:** Functionality to modify details of existing tasks.
+
+* **Status Management:** Ability to change the status of tasks (`pending`, `in progress`, `completed`).
+
+### Administrative Module
+* **User Management (Optional):** The administrator panel includes a section to view and, optionally, manage registered users.
+
+* **General Dashboard:** Consolidated view of all system tasks.
 
 ---
 
-## 💻 Ejecución del Proyecto (Localmente)
+## 🛠️ Technologies Used
 
-Para ejecutar este proyecto en tu entorno local, sigue estos pasos:
+The project was built following the mandatory specifications, focusing on simplicity and client-side performance:
 
-### Prerrequisitos
-Necesitas tener **Node.js** y **npm** instalados globalmente.
+* **HTML5 & CSS3:** Basic structure and styles.
 
-### Ejecutar el proyecto backend
+* **Bootstrap 5:** CSS framework for responsive design and UI components.
+
+* **Vanilla JavaScript:** Application logic, event handling, and API consumption.
+
+* **JSON Server:** Tool to simulate a complete REST API with a local `db.json` file.
+
+* **LocalStorage:** Used to maintain the user session after authentication.
+
+---
+
+## 💻 Running the Project (Locally)
+
+To run this project in your local environment, follow these steps:
+
+### Prerequisites
+You need to have **Node.js** and **npm** installed globally.
+
+### Run the backend project
 json-server --watch db/db.json
 
-### fronted
-live server en visual studio code
+### frontend
+live server in Visual Studio Code
